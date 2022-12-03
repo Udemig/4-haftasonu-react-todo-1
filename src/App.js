@@ -3,6 +3,9 @@ import React, { useState } from "react";
 function App() {
   const [todoText, setTodoText] = useState("");
   const [todos, setTodos] = useState([]);
+  const [editButonunaBasildiMi, setEditButonunaBasildiMi] = useState(false);
+  const [guncellenecekText, setGuncellenecekText] = useState("");
+  const [guncellenecekTodo,setGuncellenecekTodo]=useState(null)
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -22,6 +25,71 @@ function App() {
     setTodos([...todos, newTodo]);
     setTodoText("");
   };
+
+  const deleteTodo = (id) => {
+    const filteredTodos = todos.filter((item) => item.id !== id);
+    setTodos(filteredTodos);
+  };
+  const changeHasDone = (todo) => {
+    /* 
+      1. hangi todo'nun done ya da hasDone butonuna tıklandıysa
+      o todo'nun hasDone isimli alanını true ise false; false ise true
+      yapmam lazım.
+      2. Mantık şöyle olmalı:
+        a. todos isimli state tek tek dolaşılmalı.
+        b. eğer güncellemek istediğim todo'yu bulursam hasDone isimli
+        alanını 1. maddedeki gibi değiştirmeliyim.
+        c. Eğer todos isimli diziyi dolaşırken aradığım todo dışında
+        todo gelirse onu DEĞİŞTİRMEMELİYİM.
+    */
+    console.log(todo);
+    let tempTodos = [];
+    todos.map((item) => {
+      if (item.id === todo.id) {
+        let updatedTodo = {
+          ...todo,
+          hasDone: !todo.hasDone,
+        };
+        tempTodos.push(updatedTodo);
+      } else {
+        tempTodos.push(item);
+      }
+    });
+    /* for(let i=0; i < todos.length; i++){
+      if(todos[i].id === todo.id){
+        let updatedTodo={
+          ...todo,
+          hasDone: !todo.hasDone
+        }
+        tempTodos.push(updatedTodo)
+      }else{
+        tempTodos.push(todos[i])
+      }
+    } */
+    setTodos(tempTodos);
+  };
+  const todoGuncelle=(event)=>{
+    event.preventDefault()
+    console.log(guncellenecekTodo)
+    if(guncellenecekText === ""){
+      alert("TodoText can't be empty")
+      return
+    }
+    let tempTodos=[]
+    todos.map(item=>{
+      if(item.id === guncellenecekTodo.id){
+        let updatedTodo={
+          ...guncellenecekTodo,
+          title: guncellenecekText
+        }
+        tempTodos.push(updatedTodo)
+      }else{
+        tempTodos.push(item)
+      }
+    })
+    setTodos(tempTodos)
+    setEditButonunaBasildiMi(false)
+  }
   return (
     <div className="container my-5">
       <form onSubmit={handleSubmit}>
@@ -40,6 +108,30 @@ function App() {
           </button>
         </div>
       </form>
+      {editButonunaBasildiMi === true && (
+        <form onSubmit={todoGuncelle}>
+          <div className="input-group mb-3">
+            <input
+              value={guncellenecekText}
+              onChange={(event) => setGuncellenecekText(event.target.value)}
+              className="form-control"
+              type={"text"}
+            />
+            <button
+              onClick={() => {
+                setEditButonunaBasildiMi(false);
+              }}
+              className="btn btn-danger w-25"
+              type="button">
+              Cancel
+            </button>
+            <button className="btn btn-info w-25" type="submit">
+              Save
+            </button>
+          </div>
+        </form>
+      )}
+
       <div className="container">
         {todos.length === 0 ? (
           <p className="text-center">You don't have any todos yet.</p>
@@ -63,16 +155,23 @@ function App() {
                 <div>
                   <button
                     onClick={() => {
-                      const filteredTodos = todos.filter(
-                        (i) => i.id !== item.id
-                      );
-                      setTodos(filteredTodos);
+                      deleteTodo(item.id);
                     }}
                     className="btn btn-sm btn-danger">
                     Delete
                   </button>
-                  <button className="btn btn-sm btn-secondary">Edit</button>
-                  <button className="btn btn-sm btn-success">
+                  <button
+                    onClick={() => {
+                      setEditButonunaBasildiMi(true);
+                      setGuncellenecekText(item.title)
+                      setGuncellenecekTodo(item)
+                    }}
+                    className="btn btn-sm btn-secondary">
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => changeHasDone(item)}
+                    className="btn btn-sm btn-success">
                     {item.hasDone === false ? "Done" : "Undone"}
                   </button>
                 </div>
@@ -86,4 +185,3 @@ function App() {
 }
 
 export default App;
-const input = document.createElement("input");
